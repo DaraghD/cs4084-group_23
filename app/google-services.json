@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "998147469078",
+    "firebase_url": "https://weatherapp-c110a-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "weatherapp-c110a",
+    "storage_bucket": "weatherapp-c110a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:998147469078:android:fb5d95713deba802d82a37",
+        "android_client_info": {
+          "package_name": "com.example.WeatherApp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyATnpYVuNRlAH2iEsUTqkcvzvV4VFbT_J8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
