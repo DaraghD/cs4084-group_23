@@ -57,7 +57,7 @@ public class LoginActivity extends AppCompatActivity {
                             if (pass.equals(storedPw)) {
                                 // Success! Grab their UID and launch MainActivity
                                 String uid = userSnap.getKey();
-                                Intent i = new Intent(this, MainActivity.class);
+                                Intent i = new Intent(this, NavigationActivity.class);
                                 i.putExtra(EXTRA_UID, uid);
                                 startActivity(i);
                                 finish();
