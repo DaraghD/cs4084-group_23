@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+  <LinearLayout
+      android:orientation="vertical"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content">
+
+    <Button
+        android:id="@+id/btnCurrent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Fetch Current Weather"/>
+
+    <Button
+        android:id="@+id/btnForecast3h"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Fetch 5-day / 3-h Forecast"/>
+
+    <Button
+        android:id="@+id/btnOneCall"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Fetch One Call"/>
+
+    <Button
+        android:id="@+id/btnAir"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Fetch Air Pollution"/>
+
+    <TextView
+        android:id="@+id/debugOutput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:textColor="@android:color/white"
+        android:textIsSelectable="true"/>
+    <Button
+        android:id="@+id/btnHourly4d"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Hourly Forecast (4 days)"/>
+
+    <Button
+        android:id="@+id/btnDaily16d"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Daily Forecast (16 days)"/>
+
+    <Button
+        android:id="@+id/btnClimate30d"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Climatic Forecast (30 days)"/>
+
+    <Button
+        android:id="@+id/btnHistory1y"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Historical Weather (1 year)"/>
+
+    <Button
+        android:id="@+id/btnStats"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Statistical Weather Data"/>
+
+    <Button
+        android:id="@+id/btnAccum"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Accumulated Parameters"/>
+
+    <TextView
+        android:id="@+id/debugOutput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+         android:textColor="@android:color/black" 
+        android:textIsSelectable="true"/>
+  </LinearLayout>
+</ScrollView>

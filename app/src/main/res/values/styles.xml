@@ -1,0 +1,13 @@
+
+<resources>
+  <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <!-- Set window background to our gradient -->
+    <item name="android:windowBackground">@drawable/bg_gradient</item>
+    <!-- Primary & onPrimary for toolbar/buttons -->
+    <item name="colorPrimary">@color/gradient_start</item>
+    <item name="colorOnPrimary">@color/primary_text</item>
+    <!-- Text appearances default to white-ish -->
+    <item name="android:textColor">@color/primary_text</item>
+    <item name="android:textColorSecondary">@color/secondary_text</item>
+  </style>
+</resources>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/welcomeRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_gradient"
+    android:padding="24dp">
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/welcomeTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Welcome to The Weather App"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@color/primary_text"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Log In button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/welcomeLogin"
+        style="@style/Widget.MaterialComponents.Button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="48dp"
+        android:backgroundTint="@color/btn_bg"
+        android:text="Log In"
+        android:textColor="@color/btn_text"
+        app:layout_constraintTop_toBottomOf="@id/welcomeTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Register button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/welcomeRegister"
+        style="@style/Widget.MaterialComponents.Button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="@color/btn_bg"
+        android:text="Register"
+        android:textColor="@color/btn_text"
+        app:layout_constraintTop_toBottomOf="@id/welcomeLogin"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
