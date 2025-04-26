@@ -17,10 +17,15 @@ public class LoginActivity extends AppCompatActivity {
     private EditText emailInput, passInput;
     private Button   loginBtn;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        findViewById(R.id.backBtn).setOnClickListener(v -> {
+            finish();
+        });
 
         emailInput = findViewById(R.id.emailInput);
         passInput  = findViewById(R.id.passwordInput);
