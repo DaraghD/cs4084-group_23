@@ -1,14 +1,18 @@
 package com.example.WeatherApp;
 
 import android.Manifest;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
@@ -16,6 +20,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.preference.PreferenceManager;
 
 import com.example.WeatherApp.ui.home.WeatherImageFragment;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -50,12 +55,21 @@ public class MainActivity extends AppCompatActivity {
 
     private FusedLocationProviderClient locClient;
     private final OkHttpClient http = new OkHttpClient();
+    private boolean stateSaved = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
+        Button settings_button = findViewById(R.id.settings_button);
+        settings_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, SettingsActivity.class); // Replace 'SecondActivity.class' with the class of the Activity you want to open
+                startActivity(intent);
+            }
+        });
 
         // 1) Read UID
         currentUid = getIntent().getStringExtra(EXTRA_UID);
@@ -85,7 +99,23 @@ public class MainActivity extends AppCompatActivity {
         // 4) Load user prefs & start
         loadUserAndPrefs(currentUid);
     }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        stateSaved = false; // Reset the flag
+        loadUserAndPrefs(currentUid); // Load data and start location updates here
+    }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        stateSaved = true;
+    }
     private void loadUserAndPrefs(String uid) {
         DatabaseReference root = FirebaseDatabase.getInstance().getReference();
         root.child("users").child(uid)
@@ -209,6 +239,12 @@ public class MainActivity extends AppCompatActivity {
                             .getString("description");
 
                     runOnUiThread(() -> {
+                        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                        String temperatureUnit = preferences.getString("temperature_unit", "celsius");
+                        String speedUnit = preferences.getString("speed_unit_preference", "kmh"); // Default to km/h
+                        String timeFormat = preferences.getString("time_format_preference", "24"); // Default to 24-hour
+                        String pressureUnit = preferences.getString("pressure_unit_preference", "hpa"); // Default to hPa
+
                         currentCity.setText(city);
                         currentTime.setText(
                                 DateFormat.format("MMM d, h:mm a", dt)
@@ -216,8 +252,10 @@ public class MainActivity extends AppCompatActivity {
                         currentTemp.setText(
                                 String.format("%.1f°%s",
                                         temp,
-                                        units.equals("metric")?"C":"F")
+                                        temperatureUnit.equals("celsius")?"C":"F")
                         );
+                        //TODO: make sure all measurements here are correct e.g km/h vs m/s, the measurement from the api may be farenheit but switching the symbol isnt enough need to do conversion.
+                        //TODO: does api support other pressure units?
                         String details = String.format(
                                 "Feels like %.1f° | %s\n" +
                                         "Low: %.1f°, High: %.1f°\n" +
@@ -231,10 +269,10 @@ public class MainActivity extends AppCompatActivity {
                                 press,
                                 (vis>=0?vis+"m":"n/a"),
                                 windSpd,
-                                units.equals("metric")?"m/s":"mph",
+                                speedUnit.equals("kmh")?"km/h":"mph",
                                 windDeg,
-                                DateFormat.format("h:mm a", sunrise),
-                                DateFormat.format("h:mm a", sunset)
+                                DateFormat.format(timeFormat.equals("24")?"HH:mm":"h:mm a", sunrise),
+                                DateFormat.format(timeFormat.equals("24")?"HH:mm":"h:mm a", sunset)
                         );
 
                         TextView descView = findViewById(R.id.description);

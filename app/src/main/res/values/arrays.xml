@@ -1,0 +1,50 @@
+<resources>
+    <!-- Reply Preference -->
+    <string-array name="reply_entries">
+        <item>Reply</item>
+        <item>Reply to all</item>
+    </string-array>
+
+    <string-array name="reply_values">
+        <item>reply</item>
+        <item>reply_all</item>
+    </string-array>
+        <string-array name="temperature_units">
+            <item>Celsius (°C)</item>
+            <item>Fahrenheit (°F)</item>
+        </string-array>
+
+        <string-array name="temperature_unit_values">
+            <item>celsius</item>
+            <item>fahrenheit</item>
+        </string-array>
+    <string-array name="speed_units">
+        <item>Kilometers per hour (km/h)</item>
+        <item>Miles per hour (mph)</item>
+    </string-array>
+    <string-array name="speed_unit_values">
+        <item>kmh</item>
+        <item>mph</item>
+    </string-array>
+    <string-array name="time_formats">
+        <item>12-hour</item>
+        <item>24-hour</item>
+    </string-array>
+    <string-array name="time_format_values">
+        <item>12</item>
+        <item>24</item>
+    </string-array>
+
+    <string-array name="pressure_units">
+        <item>Hectopascal (hPa)</item>
+        <item>Pounds per square inch (psi)</item>
+        <item>Millimeters of mercury (mmHg)</item>
+        <item>Inches of mercury (inHg)</item>
+    </string-array>
+    <string-array name="pressure_unit_values">
+        <item>hpa</item>
+        <item>psi</item>
+        <item>mmhg</item>
+        <item>inhg</item>
+    </string-array>
+</resources>
