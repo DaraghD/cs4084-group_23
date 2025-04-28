@@ -27,12 +27,16 @@ public class WeatherImageFragment extends Fragment {
 
         if (desc.contains("rain")){
             imageView.setImageResource(R.drawable.rain_icon);
-        } else if (desc.contains("sun")) {
+        } else if (desc.contains("sun") || desc.contains("clear")) {
             imageView.setImageResource(R.drawable.sun_icon);
-        }else if (desc.contains("cloud")){
+        }else if (desc.contains("cloud") || desc.contains("fog") || desc.contains("mist")){
             imageView.setImageResource(R.drawable.cloudy_icon);
-        }else{
+        }else if (desc.contains("snow")){
+        imageView.setImageResource(R.drawable.snow_icon);
+        }else if (desc.contains("storm") || desc.contains("thunder") || desc.contains("lightning")){
             imageView.setImageResource(R.drawable.storm_icon);
+        }else{
+            imageView.setImageResource(R.drawable.cloudy_icon);
         }
 
         return root;

@@ -237,6 +237,7 @@ public class MainActivity extends AppCompatActivity {
                                 DateFormat.format("h:mm a", sunset)
                         );
 
+                        TextView descView = findViewById(R.id.description);
                         TextView feelsLikeView = findViewById(R.id.feelsLike);
                         TextView humidityView = findViewById(R.id.humidity);
                         TextView pressureView = findViewById(R.id.pressure);
@@ -247,6 +248,7 @@ public class MainActivity extends AppCompatActivity {
                         TextView highView = findViewById(R.id.high);
 
 
+                        descView.setText(desc);
                         feelsLikeView.setText(String.valueOf(feels + "°C"));
                         humidityView.setText(String.valueOf(hum + "%"));
                         pressureView.setText(String.valueOf(press + " hPa"));
