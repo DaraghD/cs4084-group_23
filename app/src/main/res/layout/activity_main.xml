@@ -206,7 +206,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="160dp"
                         android:orientation="vertical"
-                        android:gravity="center">>
+                        android:gravity="center">
                         <TextView
                             android:id="@+id/windHeader"
                             android:layout_width="match_parent"
@@ -240,7 +240,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="160dp"
                         android:orientation="vertical"
-                        android:gravity="center">>
+                        android:gravity="center">
                         <TextView
                             android:id="@+id/sunriseHeader"
                             android:layout_width="match_parent"
@@ -273,7 +273,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="160dp"
                         android:orientation="vertical"
-                        android:gravity="center">>
+                        android:gravity="center">
                         <TextView
                             android:id="@+id/sunsetHeader"
                             android:layout_width="match_parent"
