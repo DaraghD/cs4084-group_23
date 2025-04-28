@@ -15,6 +15,9 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.FragmentTransaction;
+
+import com.example.WeatherApp.ui.home.WeatherImageFragment;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
@@ -75,7 +78,6 @@ public class MainActivity extends AppCompatActivity {
         currentCity         = findViewById(R.id.currentCity);
         currentTime         = findViewById(R.id.currentTime);
         currentTemp         = findViewById(R.id.currentTemp);
-        currentDetails      = findViewById(R.id.currentDetails);
         favoritesContainer  = findViewById(R.id.favoritesContainer);
 
         locClient = LocationServices.getFusedLocationProviderClient(this);
@@ -234,7 +236,35 @@ public class MainActivity extends AppCompatActivity {
                                 DateFormat.format("h:mm a", sunrise),
                                 DateFormat.format("h:mm a", sunset)
                         );
-                        currentDetails.setText(details);
+
+                        TextView feelsLikeView = findViewById(R.id.feelsLike);
+                        TextView humidityView = findViewById(R.id.humidity);
+                        TextView pressureView = findViewById(R.id.pressure);
+                        TextView windView = findViewById(R.id.wind);
+                        TextView sunriseView = findViewById(R.id.sunrise);
+                        TextView sunsetView = findViewById(R.id.sunset);
+                        TextView lowView = findViewById(R.id.low);
+                        TextView highView = findViewById(R.id.high);
+
+
+                        feelsLikeView.setText(String.valueOf(feels + "°C"));
+                        humidityView.setText(String.valueOf(hum + "%"));
+                        pressureView.setText(String.valueOf(press + " hPa"));
+                        windView.setText(String.valueOf(windSpd + " km/h"));
+                        sunriseView.setText(DateFormat.format("h:mm a", sunrise));
+                        sunsetView.setText(DateFormat.format("h:mm a", sunset));
+                        lowView.setText(String.valueOf(tmin + "°C"));
+                        highView.setText(String.valueOf(tmax + "°C"));
+
+                        WeatherImageFragment weatherImageFragment = new WeatherImageFragment();
+
+                        Bundle bundle = new Bundle();
+                        bundle.putString("weatherDesc", desc);
+                        weatherImageFragment.setArguments(bundle);
+
+                        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+                        fragmentTransaction.replace(R.id.weatherImageContainer, weatherImageFragment);
+                        fragmentTransaction.commit();
                     });
                 } catch (JSONException ignored) {}
                 nextStep.run();
