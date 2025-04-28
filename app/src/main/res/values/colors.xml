@@ -1,7 +1,7 @@
 <!-- res/values/colors.xml -->
 <resources>
-    <color name="gradient_start">#3F51B5</color>  <!-- Indigo 500 -->
-    <color name="gradient_end">#009688</color>    <!-- Teal 500 -->
+    <color name="gradient_start">#5db8fc</color>  <!-- Indigo 500 -->
+    <color name="gradient_end">#c8e7fa</color>    <!-- Teal 500 -->
     <color name="primary_text">#FFFFFF</color>
     <color name="secondary_text">#E0F2F1</color>
     <color name="btn_bg">#FFFFFF</color>
