@@ -132,8 +132,14 @@ public class MainActivity extends AppCompatActivity {
                 );
     }
 
-    private void fetchWeather(String uid) {
-        // Permissions
+    public void fetchWeather(String uid) {
+        // 1) Read updated preferences here
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String temperatureUnit = preferences.getString("temperature_unit", "celsius");
+
+        units = temperatureUnit.equals("celsius") ? "metric" : "imperial";
+
+        // 2) Permissions check
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED ||
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -149,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // Get location
+        // 3) Get location and proceed
         locClient.getCurrentLocation(LocationRequest.PRIORITY_HIGH_ACCURACY, null)
                 .addOnSuccessListener(loc -> {
                     if (loc != null) {
@@ -170,6 +176,7 @@ public class MainActivity extends AppCompatActivity {
                     fetchFavorites(uid);
                 });
     }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -244,6 +251,8 @@ public class MainActivity extends AppCompatActivity {
                         String speedUnit = preferences.getString("speed_unit_preference", "kmh"); // Default to km/h
                         String timeFormat = preferences.getString("time_format_preference", "24"); // Default to 24-hour
                         String pressureUnit = preferences.getString("pressure_unit_preference", "hpa"); // Default to hPa
+                        String tempSymbol = temperatureUnit.equals("celsius") ? "C" : "F";
+
 
                         currentCity.setText(city);
                         currentTime.setText(
@@ -287,14 +296,14 @@ public class MainActivity extends AppCompatActivity {
 
 
                         descView.setText(desc);
-                        feelsLikeView.setText(String.valueOf(feels + "°C"));
+                        feelsLikeView.setText(String.valueOf(feels + "°" + tempSymbol));
                         humidityView.setText(String.valueOf(hum + "%"));
                         pressureView.setText(String.valueOf(press + " hPa"));
                         windView.setText(String.valueOf(windSpd + " km/h"));
                         sunriseView.setText(DateFormat.format("h:mm a", sunrise));
                         sunsetView.setText(DateFormat.format("h:mm a", sunset));
-                        lowView.setText(String.valueOf(tmin + "°C"));
-                        highView.setText(String.valueOf(tmax + "°C"));
+                        lowView.setText(String.valueOf(tmin + "°" + tempSymbol));
+                        highView.setText(String.valueOf(tmax + "°" + tempSymbol));
 
                         WeatherImageFragment weatherImageFragment = new WeatherImageFragment();
 
@@ -389,6 +398,10 @@ public class MainActivity extends AppCompatActivity {
                     });
                 } catch (JSONException ignored) { }
             }
+            public String getCurrentUid() {
+                return currentUid;
+            }
+
         });
     }
 
