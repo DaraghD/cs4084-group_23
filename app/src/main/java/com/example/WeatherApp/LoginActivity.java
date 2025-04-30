@@ -1,6 +1,7 @@
 package com.example.WeatherApp;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -62,6 +63,12 @@ public class LoginActivity extends AppCompatActivity {
                             if (pass.equals(storedPw)) {
                                 // Success! Grab their UID and launch MainActivity
                                 String uid = userSnap.getKey();
+                                // Store uid locally, use when welcome screen is launched like
+                                SharedPreferences pref = getSharedPreferences("user", MODE_PRIVATE);
+                                SharedPreferences.Editor editor = pref.edit();
+                                editor.putString("uid", uid);
+                                editor.apply();
+
                                 Intent i = new Intent(this, MainActivity.class);
                                 i.putExtra(EXTRA_UID, uid);
                                 startActivity(i);

@@ -1,6 +1,8 @@
 package com.example.WeatherApp;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -63,12 +65,37 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
         Button settings_button = findViewById(R.id.settings_button);
-        settings_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, SettingsActivity.class); // Replace 'SecondActivity.class' with the class of the Activity you want to open
-                startActivity(intent);
-            }
+        settings_button.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, SettingsActivity.class); // Replace 'SecondActivity.class' with the class of the Activity you want to open
+            startActivity(intent);
+        });
+
+        findViewById(R.id.logout_button).setOnClickListener(v -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage("Are you sure you want to logout?")
+                    .setTitle("Logout")
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // CONFIRM
+                            SharedPreferences pref = getSharedPreferences("user", MODE_PRIVATE);
+                            SharedPreferences.Editor editor = pref.edit();
+                            // reset prefs to not log back in
+                            editor.putString("uid", null);
+                            editor.apply();
+                            Intent i = new Intent(MainActivity.this, WelcomeActivity.class);
+                            startActivity(i);
+                            finish();
+                        }
+                    })
+                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // CANCEL
+                            dialog.cancel(); // Dismiss the dialog on cancel
+                        }
+                    });
+            // Create the AlertDialog object and show it
+            AlertDialog dialog = builder.create();
+            dialog.show();
         });
 
         // 1) Read UID
@@ -188,6 +215,7 @@ public class MainActivity extends AppCompatActivity {
                 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             fetchWeather(currentUid);
         } else {
+            // Bug here, this is showing up when it shouldnt sometimes
             Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show();
         }
     }
