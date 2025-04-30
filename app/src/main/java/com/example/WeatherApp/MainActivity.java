@@ -248,41 +248,46 @@ public class MainActivity extends AppCompatActivity {
                     runOnUiThread(() -> {
                         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                         String temperatureUnit = preferences.getString("temperature_unit", "celsius");
-                        String speedUnit = preferences.getString("speed_unit_preference", "kmh"); // Default to km/h
-                        String timeFormat = preferences.getString("time_format_preference", "24"); // Default to 24-hour
-                        String pressureUnit = preferences.getString("pressure_unit_preference", "hpa"); // Default to hPa
+                        String speedUnit = preferences.getString("speed_unit_preference", "kmh"); // kmh or mph
+                        String timeFormat = preferences.getString("time_format_preference", "24"); // 12 or 24
+                        String pressureUnit = preferences.getString("pressure_unit_preference", "hpa"); // hpa, mmhg, inhg
                         String tempSymbol = temperatureUnit.equals("celsius") ? "C" : "F";
 
+                        // Convert wind speed (API gives m/s)
+                        double windSpeedConverted = windSpd;
+                        String windSpeedUnitLabel = "m/s";
+                        if (speedUnit.equals("kmh")) {
+                            windSpeedConverted = windSpd * 3.6;
+                            windSpeedUnitLabel = "km/h";
+                        } else if (speedUnit.equals("mph")) {
+                            windSpeedConverted = windSpd * 2.237;
+                            windSpeedUnitLabel = "mph";
+                        }
 
+                        // Convert pressure (API gives hPa)
+                        double pressureConverted = press;
+                        String pressureLabel = "hPa";
+                        if (pressureUnit.equals("mmhg")) {
+                            pressureConverted = press * 0.75006;
+                            pressureLabel = "mmHg";
+                        } else if (pressureUnit.equals("inhg")) {
+                            pressureConverted = press * 0.02953;
+                            pressureLabel = "inHg";
+                        }  else if (pressureUnit.equals("psi")) {
+                            pressureConverted = press * 0.0145038;
+                            pressureLabel = "psi";
+                        }
+
+                        // Set views
                         currentCity.setText(city);
                         currentTime.setText(
-                                DateFormat.format("MMM d, h:mm a", dt)
+                                DateFormat.format(
+                                        timeFormat.equals("24") ? "MMM d, HH:mm" : "MMM d, h:mm a",
+                                        dt
+                                )
                         );
-                        currentTemp.setText(
-                                String.format("%.1f°%s",
-                                        temp,
-                                        temperatureUnit.equals("celsius")?"C":"F")
-                        );
-                        //TODO: make sure all measurements here are correct e.g km/h vs m/s, the measurement from the api may be farenheit but switching the symbol isnt enough need to do conversion.
-                        //TODO: does api support other pressure units?
-                        String details = String.format(
-                                "Feels like %.1f° | %s\n" +
-                                        "Low: %.1f°, High: %.1f°\n" +
-                                        "Hum: %d%% | Press: %dhPa | Vis: %s\n" +
-                                        "Wind: %.1f %s, %d°\n" +
-                                        "🌅 %s  🌇 %s",
-                                feels,
-                                desc,
-                                tmin, tmax,
-                                hum,
-                                press,
-                                (vis>=0?vis+"m":"n/a"),
-                                windSpd,
-                                speedUnit.equals("kmh")?"km/h":"mph",
-                                windDeg,
-                                DateFormat.format(timeFormat.equals("24")?"HH:mm":"h:mm a", sunrise),
-                                DateFormat.format(timeFormat.equals("24")?"HH:mm":"h:mm a", sunset)
-                        );
+
+                        currentTemp.setText(String.format("%.1f°%s", temp, tempSymbol));
 
                         TextView descView = findViewById(R.id.description);
                         TextView feelsLikeView = findViewById(R.id.feelsLike);
@@ -294,19 +299,18 @@ public class MainActivity extends AppCompatActivity {
                         TextView lowView = findViewById(R.id.low);
                         TextView highView = findViewById(R.id.high);
 
-
                         descView.setText(desc);
-                        feelsLikeView.setText(String.valueOf(feels + "°" + tempSymbol));
-                        humidityView.setText(String.valueOf(hum + "%"));
-                        pressureView.setText(String.valueOf(press + " hPa"));
-                        windView.setText(String.valueOf(windSpd + " km/h"));
-                        sunriseView.setText(DateFormat.format("h:mm a", sunrise));
-                        sunsetView.setText(DateFormat.format("h:mm a", sunset));
-                        lowView.setText(String.valueOf(tmin + "°" + tempSymbol));
-                        highView.setText(String.valueOf(tmax + "°" + tempSymbol));
+                        feelsLikeView.setText(String.format("%.1f°%s", feels, tempSymbol));
+                        humidityView.setText(String.format("%d%%", hum));
+                        pressureView.setText(String.format("%.1f %s", pressureConverted, pressureLabel));
+                        windView.setText(String.format("%.1f %s", windSpeedConverted, windSpeedUnitLabel));
+                        sunriseView.setText(DateFormat.format(timeFormat.equals("24") ? "HH:mm" : "h:mm a", sunrise));
+                        sunsetView.setText(DateFormat.format(timeFormat.equals("24") ? "HH:mm" : "h:mm a", sunset));
+                        lowView.setText(String.format("%.1f°%s", tmin, tempSymbol));
+                        highView.setText(String.format("%.1f°%s", tmax, tempSymbol));
 
+                        // Set weather image fragment
                         WeatherImageFragment weatherImageFragment = new WeatherImageFragment();
-
                         Bundle bundle = new Bundle();
                         bundle.putString("weatherDesc", desc);
                         weatherImageFragment.setArguments(bundle);
@@ -315,6 +319,7 @@ public class MainActivity extends AppCompatActivity {
                         fragmentTransaction.replace(R.id.weatherImageContainer, weatherImageFragment);
                         fragmentTransaction.commit();
                     });
+
                 } catch (JSONException ignored) {}
                 nextStep.run();
             }
