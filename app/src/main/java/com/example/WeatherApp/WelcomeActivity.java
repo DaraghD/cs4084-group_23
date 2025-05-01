@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.SharedPreferences;
+import com.google.android.libraries.places.api.Places;
 
 public class WelcomeActivity extends AppCompatActivity {
     @Override
@@ -14,6 +15,9 @@ public class WelcomeActivity extends AppCompatActivity {
 
         Button loginBtn    = findViewById(R.id.welcomeLogin);
         Button registerBtn = findViewById(R.id.welcomeRegister);
+        if(!Places.isInitialized())
+            Places.initialize(this.getApplicationContext(), "YOUR_API_KEY");
+
 
         SharedPreferences pref = getSharedPreferences("user", MODE_PRIVATE);
         String uid = pref.getString("uid", null);

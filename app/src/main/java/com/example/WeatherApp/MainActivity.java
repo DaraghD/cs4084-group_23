@@ -6,13 +6,17 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -31,9 +35,14 @@ import com.google.android.gms.location.LocationServices;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.android.material.card.MaterialCardView;
+import com.google.gson.JsonArray;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.IOException;
+
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -41,12 +50,12 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
-    private static final String API_KEY      = "0ec2f3bfd7e39f7e44f11e00bbd31a81";
-    private static final int    LOCATION_REQ = 1001;
-    private static final String EXTRA_UID    = "uid";
+    private static final String API_KEY = "0ec2f3bfd7e39f7e44f11e00bbd31a81";
+    private static final int LOCATION_REQ = 1001;
+    private static final String EXTRA_UID = "uid";
 
-    private String  currentUid;
-    private String  units = "metric";
+    private String currentUid;
+    private String units = "metric";
 
     private TextView greetingView;
     private TextView currentCity;
@@ -65,6 +74,20 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
         Button settings_button = findViewById(R.id.settings_button);
+        SearchView search_button = findViewById(R.id.search_button);
+        search_button.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                searchPlace(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                // This is called as the user types
+                return false;
+            }
+        });
         settings_button.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, SettingsActivity.class); // Replace 'SecondActivity.class' with the class of the Activity you want to open
             startActivity(intent);
@@ -115,17 +138,18 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // 3) Wire up views
-        greetingView        = findViewById(R.id.greetingView);
-        currentCity         = findViewById(R.id.currentCity);
-        currentTime         = findViewById(R.id.currentTime);
-        currentTemp         = findViewById(R.id.currentTemp);
-        favoritesContainer  = findViewById(R.id.favoritesContainer);
+        greetingView = findViewById(R.id.greetingView);
+        currentCity = findViewById(R.id.currentCity);
+        currentTime = findViewById(R.id.currentTime);
+        currentTemp = findViewById(R.id.currentTemp);
+        favoritesContainer = findViewById(R.id.favoritesContainer);
 
         locClient = LocationServices.getFusedLocationProviderClient(this);
 
         // 4) Load user prefs & start
         loadUserAndPrefs(currentUid);
     }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -143,23 +167,25 @@ public class MainActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
         stateSaved = true;
     }
+
     private void loadUserAndPrefs(String uid) {
         DatabaseReference root = FirebaseDatabase.getInstance().getReference();
         root.child("users").child(uid)
                 .get().addOnSuccessListener(snap -> {
-                    String name      = snap.child("displayName").getValue(String.class);
+                    String name = snap.child("displayName").getValue(String.class);
                     String prefUnits = snap.child("preferences")
                             .child("units").getValue(String.class);
                     if (name != null) greetingView.setText("Hi, " + name);
                     if ("imperial".equals(prefUnits)) units = "imperial";
-                    fetchWeather(uid);
+                    fetchWeather(uid, null, null);
                 })
                 .addOnFailureListener(e ->
                         Toast.makeText(this, "Failed to load user prefs", Toast.LENGTH_SHORT).show()
                 );
     }
 
-    public void fetchWeather(String uid) {
+    // if lon and lat are null, the users current location is used
+    public void fetchWeather(String uid, Double lon, Double lat) {
         // 1) Read updated preferences here
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         String temperatureUnit = preferences.getString("temperature_unit", "celsius");
@@ -186,9 +212,18 @@ public class MainActivity extends AppCompatActivity {
         locClient.getCurrentLocation(LocationRequest.PRIORITY_HIGH_ACCURACY, null)
                 .addOnSuccessListener(loc -> {
                     if (loc != null) {
+                        Double longitude;
+                        Double latitude;
+                        if (lon != null && lat != null) {
+                            longitude = lon;
+                            latitude = lat;
+                        } else {
+                            longitude = loc.getLongitude();
+                            latitude = loc.getLatitude();
+                        }
                         fetchByCoords(
-                                loc.getLatitude(),
-                                loc.getLongitude(),
+                                latitude,
+                                longitude,
                                 "Your Location",
                                 () -> fetchFavorites(uid)
                         );
@@ -213,14 +248,56 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == LOCATION_REQ
                 && grantResults.length > 0
                 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            fetchWeather(currentUid);
+            fetchWeather(currentUid, null, null);
         } else {
             // Bug here, this is showing up when it shouldnt sometimes
             Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show();
         }
     }
 
-    /** Fetch and display the “Current Location” card */
+    public void searchPlace(String place) {
+        String url_req = "https://nominatim.openstreetmap.org/search?q=" +
+                Uri.encode(place) +
+                "&format=json&limit=1";
+        Request request = new Request.Builder().url(url_req).header("User-Agent", "WeatherApp").build();
+        http.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                if (!response.isSuccessful()) {
+                    runOnUiThread(() ->
+                            Toast.makeText(MainActivity.this, "Error: " + response.code(), Toast.LENGTH_SHORT).show()
+                    );
+                }
+                String responseData = response.body().string();
+                try {
+                    JSONArray jsonArray = new JSONArray(responseData);
+                    if (jsonArray.length() == 0) {
+                        runOnUiThread(() -> Toast.makeText(MainActivity.this,
+                                "No results found",
+                                Toast.LENGTH_SHORT).show());
+                    }
+                    JSONObject place = jsonArray.getJSONObject(0);
+                    Double lat = Double.parseDouble(place.getString("lat"));
+                    Double lon = Double.parseDouble(place.getString("lon"));
+                    fetchWeather(currentUid, lon, lat);
+
+                } catch (Exception e) {
+                    Log.e("NOMINATIM", "Error parsing JSON", e);
+                }
+            }
+
+            @Override
+            public void onFailure(Call call, IOException e) {
+                runOnUiThread(() ->
+                        Toast.makeText(MainActivity.this, "Error:" + e.getMessage(), Toast.LENGTH_SHORT).show()
+                );
+            }
+        });
+    }
+
+    /**
+     * Fetch and display the “Current Location” card
+     */
     private void fetchByCoords(double lat,
                                double lon,
                                String label,
@@ -234,14 +311,17 @@ public class MainActivity extends AppCompatActivity {
 
         Request req = new Request.Builder().url(url).build();
         http.newCall(req).enqueue(new Callback() {
-            @Override public void onFailure(Call call, IOException e) {
+            @Override
+            public void onFailure(Call call, IOException e) {
                 runOnUiThread(() ->
                         Toast.makeText(MainActivity.this,
                                 label + " error", Toast.LENGTH_SHORT).show()
                 );
                 nextStep.run();
             }
-            @Override public void onResponse(Call call, Response res) throws IOException {
+
+            @Override
+            public void onResponse(Call call, Response res) throws IOException {
                 if (!res.isSuccessful()) {
                     runOnUiThread(() ->
                             Toast.makeText(MainActivity.this,
@@ -251,25 +331,25 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
                 try {
-                    JSONObject j    = new JSONObject(res.body().string());
+                    JSONObject j = new JSONObject(res.body().string());
                     JSONObject main = j.getJSONObject("main");
-                    JSONObject sys  = j.getJSONObject("sys");
+                    JSONObject sys = j.getJSONObject("sys");
                     JSONObject wind = j.getJSONObject("wind");
 
-                    String city     = j.getString("name");
-                    long   dt       = j.getLong("dt") * 1000L;
-                    double temp     = main.getDouble("temp");
-                    double feels    = main.getDouble("feels_like");
-                    double tmin     = main.getDouble("temp_min");
-                    double tmax     = main.getDouble("temp_max");
-                    int    hum      = main.getInt("humidity");
-                    int    press    = main.getInt("pressure");
-                    int    vis      = j.optInt("visibility", -1);
-                    double windSpd  = wind.getDouble("speed");
-                    int    windDeg  = wind.optInt("deg", 0);
-                    long   sunrise  = sys.getLong("sunrise") * 1000L;
-                    long   sunset   = sys.getLong("sunset")  * 1000L;
-                    String desc     = j.getJSONArray("weather")
+                    String city = j.getString("name");
+                    long dt = j.getLong("dt") * 1000L;
+                    double temp = main.getDouble("temp");
+                    double feels = main.getDouble("feels_like");
+                    double tmin = main.getDouble("temp_min");
+                    double tmax = main.getDouble("temp_max");
+                    int hum = main.getInt("humidity");
+                    int press = main.getInt("pressure");
+                    int vis = j.optInt("visibility", -1);
+                    double windSpd = wind.getDouble("speed");
+                    int windDeg = wind.optInt("deg", 0);
+                    long sunrise = sys.getLong("sunrise") * 1000L;
+                    long sunset = sys.getLong("sunset") * 1000L;
+                    String desc = j.getJSONArray("weather")
                             .getJSONObject(0)
                             .getString("description");
 
@@ -301,7 +381,7 @@ public class MainActivity extends AppCompatActivity {
                         } else if (pressureUnit.equals("inhg")) {
                             pressureConverted = press * 0.02953;
                             pressureLabel = "inHg";
-                        }  else if (pressureUnit.equals("psi")) {
+                        } else if (pressureUnit.equals("psi")) {
                             pressureConverted = press * 0.0145038;
                             pressureLabel = "psi";
                         }
@@ -348,13 +428,16 @@ public class MainActivity extends AppCompatActivity {
                         fragmentTransaction.commit();
                     });
 
-                } catch (JSONException ignored) {}
+                } catch (JSONException ignored) {
+                }
                 nextStep.run();
             }
         });
     }
 
-    /** Fetch favorites and render a mini-card for each */
+    /**
+     * Fetch favorites and render a mini-card for each
+     */
     private void fetchFavorites(String uid) {
         DatabaseReference root = FirebaseDatabase.getInstance().getReference();
         root.child("userFavorites").child(uid)
@@ -372,28 +455,31 @@ public class MainActivity extends AppCompatActivity {
 
     private void fetchFavoriteById(String cityId) {
         String url = "https://api.openweathermap.org/data/2.5/weather"
-                + "?id="    + cityId
+                + "?id=" + cityId
                 + "&units=" + units
                 + "&appid=" + API_KEY;
 
         Request req = new Request.Builder().url(url).build();
         http.newCall(req).enqueue(new Callback() {
-            @Override public void onFailure(Call call, IOException e) {
+            @Override
+            public void onFailure(Call call, IOException e) {
                 // skip failures
             }
-            @Override public void onResponse(Call call, Response res) throws IOException {
+
+            @Override
+            public void onResponse(Call call, Response res) throws IOException {
                 if (!res.isSuccessful()) return;
                 try {
-                    JSONObject j    = new JSONObject(res.body().string());
-                    String    city  = j.getString("name");
-                    long      dt    = j.getLong("dt") * 1000L;
+                    JSONObject j = new JSONObject(res.body().string());
+                    String city = j.getString("name");
+                    long dt = j.getLong("dt") * 1000L;
                     JSONObject main = j.getJSONObject("main");
                     JSONObject wind = j.getJSONObject("wind");
 
-                    double temp    = main.getDouble("temp");
-                    int    hum     = main.getInt("humidity");
+                    double temp = main.getDouble("temp");
+                    int hum = main.getInt("humidity");
                     double windSpd = wind.getDouble("speed");
-                    String desc    = j
+                    String desc = j
                             .getJSONArray("weather")
                             .getJSONObject(0)
                             .getString("description");
@@ -409,7 +495,7 @@ public class MainActivity extends AppCompatActivity {
                         TextView tvTime = card.findViewById(R.id.timeStamp);
                         TextView tvDesc = card.findViewById(R.id.description);
                         TextView tvTemp = card.findViewById(R.id.temperature);
-                        TextView tvDet  = card.findViewById(R.id.details);
+                        TextView tvDet = card.findViewById(R.id.details);
 
                         tvCity.setText(city);
                         tvTime.setText(DateFormat.format("h:mm a", dt));
@@ -429,8 +515,10 @@ public class MainActivity extends AppCompatActivity {
                         // 3) Add it to the container
                         parent.addView(card);
                     });
-                } catch (JSONException ignored) { }
+                } catch (JSONException ignored) {
+                }
             }
+
             public String getCurrentUid() {
                 return currentUid;
             }
