@@ -93,34 +93,6 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        findViewById(R.id.logout_button).setOnClickListener(v -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage("Are you sure you want to logout?")
-                    .setTitle("Logout")
-                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            // CONFIRM
-                            SharedPreferences pref = getSharedPreferences("user", MODE_PRIVATE);
-                            SharedPreferences.Editor editor = pref.edit();
-                            // reset prefs to not log back in
-                            editor.putString("uid", null);
-                            editor.apply();
-                            Intent i = new Intent(MainActivity.this, WelcomeActivity.class);
-                            startActivity(i);
-                            finish();
-                        }
-                    })
-                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            // CANCEL
-                            dialog.cancel(); // Dismiss the dialog on cancel
-                        }
-                    });
-            // Create the AlertDialog object and show it
-            AlertDialog dialog = builder.create();
-            dialog.show();
-        });
-
         // 1) Read UID
         currentUid = getIntent().getStringExtra(EXTRA_UID);
         if (currentUid == null) {

@@ -6,4 +6,8 @@
     <color name="secondary_text">#E0F2F1</color>
     <color name="btn_bg">#FFFFFF</color>
     <color name="btn_text">#3F51B5</color>
+    <color name="light_blue_400">#FF29B6F6</color>
+    <color name="light_blue_600">#FF039BE5</color>
+    <color name="gray_400">#FFBDBDBD</color>
+    <color name="gray_600">#FF757575</color>
 </resources>

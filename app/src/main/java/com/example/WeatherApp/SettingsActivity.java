@@ -1,13 +1,24 @@
 package com.example.WeatherApp;
 
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ListView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 
 public class SettingsActivity extends AppCompatActivity {
@@ -31,7 +42,6 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
-
         private SharedPreferences prefs;
         private final SharedPreferences.OnSharedPreferenceChangeListener listener =
                 (sharedPreferences, key) -> {
@@ -49,6 +59,46 @@ public class SettingsActivity extends AppCompatActivity {
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
             prefs = PreferenceManager.getDefaultSharedPreferences(requireContext());
             prefs.registerOnSharedPreferenceChangeListener(listener);
+            Preference logout = findPreference("logout_button_custom");
+            Log.e("Logout", logout.toString());
+            if (logout != null) {
+                logout.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
+                {
+                    @Override
+                    public boolean onPreferenceClick(@NonNull Preference preference) {
+                        handleLogoutClick();
+                        return true;
+                    }
+                });
+            }
+        }
+
+        private void handleLogoutClick(){
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+            builder.setMessage("Are you sure you want to logout?")
+                    .setTitle("Logout")
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // CONFIRM
+                            SharedPreferences pref = requireContext().getSharedPreferences("user", MODE_PRIVATE);
+                            SharedPreferences.Editor editor = pref.edit();
+                            // reset prefs to not log back in
+                            editor.putString("uid", null);
+                            editor.apply();
+                            Intent i = new Intent(requireContext(), WelcomeActivity.class);
+                            startActivity(i);
+                            requireActivity().finish();
+                        }
+                    })
+                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // CANCEL
+                            dialog.cancel(); // Dismiss the dialog on cancel
+                        }
+                    });
+            // Create the AlertDialog object and show it
+            AlertDialog dialog = builder.create();
+            dialog.show();
         }
 
         @Override
