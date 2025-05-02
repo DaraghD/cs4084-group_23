@@ -123,6 +123,7 @@ public class MainActivity extends AppCompatActivity {
         loadUserAndPrefs(currentUid);
         swipeRefreshLayout.setOnRefreshListener(() -> {
             loadUserAndPrefs(currentUid);
+            swipeRefreshLayout.setRefreshing(false);
         });
 
 
