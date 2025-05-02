@@ -455,12 +455,11 @@ public class MainActivity extends AppCompatActivity {
                                 }
 
                                 runOnUiThread(() -> {
-                                    /*
+
                                     RecyclerView recycler = findViewById(R.id.hourlyRecycler);
                                     recycler.setHasFixedSize(true);
                                     recycler.setLayoutManager(new LinearLayoutManager(MainActivity.this, LinearLayoutManager.HORIZONTAL, false));
                                     recycler.setAdapter(new HourForecastAdapter(hours));
-                                     */
                                 });
 
                             } catch (Exception e) {
