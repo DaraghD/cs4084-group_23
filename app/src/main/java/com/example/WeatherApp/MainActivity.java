@@ -78,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        favorites = new ArrayList<>(); // reset favourites on create
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
         Button settings_button = findViewById(R.id.settings_button);
@@ -128,6 +129,7 @@ public class MainActivity extends AppCompatActivity {
         loadUserAndPrefs(currentUid);
         swipeRefreshLayout.setOnRefreshListener(() -> {
             loadUserAndPrefs(currentUid);
+            favorites = new ArrayList<>();
             swipeRefreshLayout.setRefreshing(false);
         });
 
@@ -150,6 +152,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         stateSaved = false; // Reset the flag
+        favorites = new ArrayList<>(); // reset favourites on resume
         loadUserAndPrefs(currentUid); // Load data and start location updates here
     }
 
