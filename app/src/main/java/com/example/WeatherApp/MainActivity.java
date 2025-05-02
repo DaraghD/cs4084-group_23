@@ -33,6 +33,7 @@ import com.example.WeatherApp.ui.home.WeatherImageFragment;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.android.material.card.MaterialCardView;
@@ -43,6 +44,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.sql.Array;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -64,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView currentTemp;
     private TextView currentDetails;
     private LinearLayout favoritesContainer;
+    private List<String> favorites = new ArrayList<String>();
 
     private FusedLocationProviderClient locClient;
     private final OkHttpClient http = new OkHttpClient();
@@ -435,9 +442,16 @@ public class MainActivity extends AppCompatActivity {
             root.child("userFavorites").child(uid)
                     .get()
                     .addOnSuccessListener(favSnap -> {
-                        for (var c : favSnap.getChildren()) {
-                            String cityId = c.getKey();
-                            fetchFavoriteById(cityId);
+                        Set<String> unique_city_ids = new HashSet<>();
+                        for(var c: favSnap.getChildren()){
+                            unique_city_ids.add(c.getKey());
+                        }
+                        for (String cityId : unique_city_ids) {
+                            if(favorites != null)
+                                if(!this.favorites.contains(cityId)) { // if not in favourites, add to favourites
+                                    fetchFavoriteById(cityId);
+                                    this.favorites.add(cityId);
+                                }
                         }
                     })
                     .addOnFailureListener(e ->
