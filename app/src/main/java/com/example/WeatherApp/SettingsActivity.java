@@ -39,6 +39,7 @@ public class SettingsActivity extends AppCompatActivity {
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+        findViewById(R.id.backBtn).setOnClickListener(v -> finish());
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {

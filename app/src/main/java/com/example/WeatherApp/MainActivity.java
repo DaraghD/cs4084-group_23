@@ -50,9 +50,9 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
-    private static final String API_KEY = "0ec2f3bfd7e39f7e44f11e00bbd31a81";
+    public static final String API_KEY = "0ec2f3bfd7e39f7e44f11e00bbd31a81";
     private static final int LOCATION_REQ = 1001;
-    private static final String EXTRA_UID = "uid";
+    public static final String EXTRA_UID = "uid";
 
     private String currentUid;
     private String units = "metric";
@@ -75,6 +75,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Button settings_button = findViewById(R.id.settings_button);
         SearchView search_button = findViewById(R.id.search_button);
+        Button editFavBtn = findViewById(R.id.edit_favorites_button);
+        Button mapBtn     = findViewById(R.id.map_button);
         search_button.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -120,6 +122,19 @@ public class MainActivity extends AppCompatActivity {
 
         // 4) Load user prefs & start
         loadUserAndPrefs(currentUid);
+
+        editFavBtn = findViewById(R.id.edit_favorites_button);
+        editFavBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, EditFavoritesActivity.class);
+            intent.putExtra(EXTRA_UID, currentUid);
+            startActivity(intent);
+        });
+
+
+        mapBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, MapActivity.class);
+            startActivity(intent);
+        });
     }
 
     @Override
@@ -411,18 +426,26 @@ public class MainActivity extends AppCompatActivity {
      * Fetch favorites and render a mini-card for each
      */
     private void fetchFavorites(String uid) {
-        DatabaseReference root = FirebaseDatabase.getInstance().getReference();
-        root.child("userFavorites").child(uid)
-                .get().addOnSuccessListener(favSnap -> {
-                    for (var c : favSnap.getChildren()) {
-                        String cityId = c.getKey();
-                        fetchFavoriteById(cityId);
-                    }
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Failed to load favorites",
-                                Toast.LENGTH_SHORT).show()
-                );
+        // this runs on whichever thread called fetchFavorites, might be background!
+        runOnUiThread(() -> {
+            // 0) clear any old cards (now safely on main thread)
+            favoritesContainer.removeAllViews();
+
+            // 1) now fetch from Firebase (its listeners themselves execute on main thread)
+            DatabaseReference root = FirebaseDatabase.getInstance().getReference();
+            root.child("userFavorites").child(uid)
+                    .get()
+                    .addOnSuccessListener(favSnap -> {
+                        for (var c : favSnap.getChildren()) {
+                            String cityId = c.getKey();
+                            fetchFavoriteById(cityId);
+                        }
+                    })
+                    .addOnFailureListener(e ->
+                            Toast.makeText(this, "Failed to load favorites",
+                                    Toast.LENGTH_SHORT).show()
+                    );
+        });
     }
 
     private void fetchFavoriteById(String cityId) {

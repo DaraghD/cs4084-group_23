@@ -1,0 +1,24 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Google Map -->
+    <fragment
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+    <!-- Back button overlaid on top-left -->
+    <ImageButton
+    android:id="@+id/backBtn"
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:layout_gravity="top|start"
+    android:layout_margin="16dp"
+    android:background="?attr/selectableItemBackgroundBorderless"
+    android:contentDescription="Back"
+    android:src="@android:drawable/ic_media_previous" />
+
+
+</FrameLayout>
