@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
@@ -41,6 +42,15 @@ public class SettingsActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+        if (item.getItemId() == android.R.id.home) {
+            finish(); // go back to previous screen
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     public static class SettingsFragment extends PreferenceFragmentCompat {
         private SharedPreferences prefs;
         private final SharedPreferences.OnSharedPreferenceChangeListener listener =
@@ -52,7 +62,6 @@ public class SettingsActivity extends AppCompatActivity {
                         Toast.makeText(getContext(), "Changes will apply when you return.", Toast.LENGTH_SHORT).show();
                     }
                 };
-
 
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -66,6 +75,7 @@ public class SettingsActivity extends AppCompatActivity {
                 {
                     @Override
                     public boolean onPreferenceClick(@NonNull Preference preference) {
+                        Log.e("Logout", "Clicked");
                         handleLogoutClick();
                         return true;
                     }

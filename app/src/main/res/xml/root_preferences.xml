@@ -35,11 +35,12 @@
             android:entryValues="@array/pressure_unit_values"
             android:defaultValue="hpa" />
     </PreferenceCategory>
+    <PreferenceCategory app:title="Other">
 
     <Preference
         android:key="logout_button_custom"
         app:title="Logout"
-        
         />
+    </PreferenceCategory>
 
 </PreferenceScreen>
