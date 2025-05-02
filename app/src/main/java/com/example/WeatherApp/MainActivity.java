@@ -27,6 +27,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.PreferenceManager;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.WeatherApp.ui.home.WeatherImageFragment;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -67,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
     private FusedLocationProviderClient locClient;
     private final OkHttpClient http = new OkHttpClient();
     private boolean stateSaved = false;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,7 +95,6 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // 1) Read UID
         currentUid = getIntent().getStringExtra(EXTRA_UID);
         if (currentUid == null) {
             Toast.makeText(this, "Error: no user logged in", Toast.LENGTH_LONG).show();
@@ -101,7 +102,6 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // 2) Insets handling
         ConstraintLayout root = findViewById(R.id.main);
         ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
             Insets s = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -109,7 +109,6 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        // 3) Wire up views
         greetingView = findViewById(R.id.greetingView);
         currentCity = findViewById(R.id.currentCity);
         currentTime = findViewById(R.id.currentTime);
@@ -118,9 +117,11 @@ public class MainActivity extends AppCompatActivity {
 
         locClient = LocationServices.getFusedLocationProviderClient(this);
 
-        // 4) Load user prefs & start
-        loadUserAndPrefs(currentUid);
-    }
+        swipeRefreshLayout = findViewById(R.id.swipeRefresh);
+        swipeRefreshLayout.setOnRefreshListener(()-> {
+            loadUserAndPrefs(currentUid);
+        });
+        }
 
     @Override
     protected void onResume() {
@@ -158,13 +159,12 @@ public class MainActivity extends AppCompatActivity {
 
     // if lon and lat are null, the users current location is used
     public void fetchWeather(String uid, Double lon, Double lat) {
-        // 1) Read updated preferences here
+
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         String temperatureUnit = preferences.getString("temperature_unit", "celsius");
 
         units = temperatureUnit.equals("celsius") ? "metric" : "imperial";
 
-        // 2) Permissions check
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED ||
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -180,7 +180,6 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // 3) Get location and proceed
         locClient.getCurrentLocation(LocationRequest.PRIORITY_HIGH_ACCURACY, null)
                 .addOnSuccessListener(loc -> {
                     if (loc != null) {
@@ -209,6 +208,8 @@ public class MainActivity extends AppCompatActivity {
                             Toast.LENGTH_SHORT).show();
                     fetchFavorites(uid);
                 });
+
+        swipeRefreshLayout.setRefreshing(false);
     }
 
 
@@ -267,9 +268,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Fetch and display the “Current Location” card
-     */
     private void fetchByCoords(double lat,
                                double lon,
                                String label,
@@ -333,7 +331,7 @@ public class MainActivity extends AppCompatActivity {
                         String pressureUnit = preferences.getString("pressure_unit_preference", "hpa"); // hpa, mmhg, inhg
                         String tempSymbol = temperatureUnit.equals("celsius") ? "C" : "F";
 
-                        // Convert wind speed (API gives m/s)
+                        // Convert wind speed
                         double windSpeedConverted = windSpd;
                         String windSpeedUnitLabel = "m/s";
                         if (speedUnit.equals("kmh")) {
@@ -344,7 +342,7 @@ public class MainActivity extends AppCompatActivity {
                             windSpeedUnitLabel = "mph";
                         }
 
-                        // Convert pressure (API gives hPa)
+                        // Convert pressure
                         double pressureConverted = press;
                         String pressureLabel = "hPa";
                         if (pressureUnit.equals("mmhg")) {
@@ -358,7 +356,6 @@ public class MainActivity extends AppCompatActivity {
                             pressureLabel = "psi";
                         }
 
-                        // Set views
                         currentCity.setText(city);
                         currentTime.setText(
                                 DateFormat.format(
@@ -389,7 +386,6 @@ public class MainActivity extends AppCompatActivity {
                         lowView.setText(String.format("%.1f°%s", tmin, tempSymbol));
                         highView.setText(String.format("%.1f°%s", tmax, tempSymbol));
 
-                        // Set weather image fragment
                         WeatherImageFragment weatherImageFragment = new WeatherImageFragment();
                         Bundle bundle = new Bundle();
                         bundle.putString("weatherDesc", desc);
@@ -407,9 +403,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Fetch favorites and render a mini-card for each
-     */
     private void fetchFavorites(String uid) {
         DatabaseReference root = FirebaseDatabase.getInstance().getReference();
         root.child("userFavorites").child(uid)
@@ -457,12 +450,11 @@ public class MainActivity extends AppCompatActivity {
                             .getString("description");
 
                     runOnUiThread(() -> {
-                        // 1) Inflate the card layout
+
                         LinearLayout parent = findViewById(R.id.favoritesContainer);
                         View card = getLayoutInflater()
                                 .inflate(R.layout.item_weather, parent, false);
 
-                        // 2) Bind its views
                         TextView tvCity = card.findViewById(R.id.cityName);
                         TextView tvTime = card.findViewById(R.id.timeStamp);
                         TextView tvDesc = card.findViewById(R.id.description);
@@ -484,7 +476,6 @@ public class MainActivity extends AppCompatActivity {
                                 units.equals("metric") ? "m/s" : "mph"
                         ));
 
-                        // 3) Add it to the container
                         parent.addView(card);
                     });
                 } catch (JSONException ignored) {
