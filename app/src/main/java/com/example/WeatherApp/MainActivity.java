@@ -23,6 +23,8 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.WeatherApp.ui.home.WeatherImageFragment;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -34,6 +36,9 @@ import com.google.android.material.card.MaterialCardView;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -346,6 +351,51 @@ public class MainActivity extends AppCompatActivity {
                         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
                         fragmentTransaction.replace(R.id.weatherImageContainer, weatherImageFragment);
                         fragmentTransaction.commit();
+                    });
+// 5-day / 3-hour forecast for hourly display
+                    String forecastUrl = "https://api.openweathermap.org/data/2.5/forecast"
+                            + "?lat=" + lat
+                            + "&lon=" + lon
+                            + "&units=" + units
+                            + "&appid=" + API_KEY;
+
+                    Request forecastReq = new Request.Builder().url(forecastUrl).build();
+                    http.newCall(forecastReq).enqueue(new Callback() {
+                        @Override
+                        public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                            runOnUiThread(() ->
+                                    Toast.makeText(MainActivity.this, "Failed to load hourly forecast", Toast.LENGTH_SHORT).show()
+                            );
+                        }
+
+                        @Override
+                        public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                            if (!response.isSuccessful()) return;
+                            try {
+                                JSONObject json = new JSONObject(response.body().string());
+                                var list = json.getJSONArray("list");
+                                List<HourForecastAdapter.HourData> hours = new ArrayList<>();
+
+                                for (int i = 0; i < Math.min(8, list.length()); i++) {
+                                    JSONObject item = list.getJSONObject(i);
+                                    long time = item.getLong("dt");
+                                    double temp = item.getJSONObject("main").getDouble("temp");
+                                    String icon = item.getJSONArray("weather").getJSONObject(0).getString("icon");
+
+                                    hours.add(new HourForecastAdapter.HourData(time, temp, icon));
+                                }
+
+                                runOnUiThread(() -> {
+                                    RecyclerView recycler = findViewById(R.id.hourlyRecycler);
+                                    recycler.setHasFixedSize(true);
+                                    recycler.setLayoutManager(new LinearLayoutManager(MainActivity.this, LinearLayoutManager.HORIZONTAL, false));
+                                    recycler.setAdapter(new HourForecastAdapter(hours));
+                                });
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
                     });
 
                 } catch (JSONException ignored) {}

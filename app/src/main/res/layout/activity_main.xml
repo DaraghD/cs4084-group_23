@@ -9,7 +9,6 @@
     android:padding="16dp">
 
     <!-- Greeting -->
-
     <TextView
         android:id="@+id/greetingView"
         android:layout_width="wrap_content"
@@ -49,7 +48,7 @@
         android:layout_height="wrap_content"
         android:textColor="@android:color/black"
         android:textStyle="bold"
-        android:textSize="64dp"
+        android:textSize="64sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/weatherImageContainer" />
@@ -60,7 +59,7 @@
         android:layout_height="wrap_content"
         android:textColor="#595959"
         android:textStyle="bold"
-        android:textSize="24dp"
+        android:textSize="24sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/currentTemp" />
@@ -76,12 +75,12 @@
         app:layout_constraintTop_toBottomOf="@+id/description" />
 
     <!-- Scrollable content container -->
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:id="@+id/scroll"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="20dp"
         android:layout_margin="10dp"
+        android:layout_marginTop="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -94,83 +93,70 @@
             android:orientation="vertical"
             android:layout_gravity="center_horizontal">
 
+            <!-- Hourly RecyclerView -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/hourlyRecycler"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:clipToPadding="false"
+                android:nestedScrollingEnabled="false"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/item_hour" />
+
+            <!-- Weather Info Grid -->
             <GridLayout
-            android:id="@+id/weatherInfoGrid"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:columnCount="2">
-
-            <androidx.cardview.widget.CardView
-                app:cardBackgroundColor="#5db8fc"
-                app:cardElevation="10dp"
-                app:cardCornerRadius="16dp"
-                android:layout_margin="15dp"
-                android:layout_width="0dp"
+                android:id="@+id/weatherInfoGrid"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_columnWeight="1">
+                android:columnCount="2">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="160dp"
-                    android:orientation="vertical"
-                    android:gravity="center">
-                <TextView
-
-                    android:id="@+id/feelsLikeHeader"
-                    android:layout_width="match_parent"
+                <androidx.cardview.widget.CardView
+                    app:cardBackgroundColor="#5db8fc"
+                    app:cardElevation="10dp"
+                    app:cardCornerRadius="16dp"
+                    android:layout_margin="15dp"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Feels Like"
-                    android:textColor="@android:color/white"
-                    android:gravity="center"
-                    android:textSize="20sp" />
+                    android:layout_columnWeight="1">
+                </androidx.cardview.widget.CardView>
 
-                <TextView
-                    android:id="@+id/feelsLike"
-                    android:layout_width="match_parent"
+                <androidx.cardview.widget.CardView
+                    app:cardBackgroundColor="#5db8fc"
+                    app:cardElevation="10dp"
+                    app:cardCornerRadius="16dp"
+                    android:layout_width="0dp"
+                    android:layout_margin="15dp"
                     android:layout_height="wrap_content"
-                    android:text="0"
-                    android:textColor="@android:color/white"
-                    android:gravity="center"
-                    android:textSize="32sp"
-                    />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
+                    android:layout_columnWeight="1">
 
-            <androidx.cardview.widget.CardView
-                app:cardBackgroundColor="#5db8fc"
-                app:cardElevation="10dp"
-                app:cardCornerRadius="16dp"
-                android:layout_width="0dp"
-                android:layout_margin="15dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="160dp"
+                        android:orientation="vertical"
+                        android:gravity="center">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="160dp"
-                    android:orientation="vertical"
-                    android:gravity="center">
+                        <TextView
+                            android:id="@+id/humidityHeader"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Humidity"
+                            android:textColor="@android:color/white"
+                            android:gravity="center"
+                            android:textSize="20sp" />
 
-                <TextView
-                    android:id="@+id/humidityHeader"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Humidity"
-                    android:textColor="@android:color/white"
-                    android:gravity="center"
-                    android:textSize="20sp" />
-
-                <TextView
-                    android:id="@+id/humidity"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="0"
-                    android:textColor="@android:color/white"
-                    android:gravity="center"
-                    android:textSize="32sp" />
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
+                        <TextView
+                            android:id="@+id/humidity"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="0"
+                            android:textColor="@android:color/white"
+                            android:gravity="center"
+                            android:textSize="32sp" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
 
                 <androidx.cardview.widget.CardView
                     app:cardBackgroundColor="#5db8fc"
@@ -210,10 +196,10 @@
                     app:cardBackgroundColor="#5db8fc"
                     app:cardCornerRadius="16dp"
                     android:layout_margin="15dp"
-                    android:layout_width="0dp"
                     app:cardElevation="10dp"
-                    android:layout_columnWeight="1"
-                    app:layout_constraintDimensionRatio="1:1">
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -243,9 +229,9 @@
                 <androidx.cardview.widget.CardView
                     app:cardBackgroundColor="#5db8fc"
                     app:cardCornerRadius="16dp"
-                    android:layout_width="0dp"
-                    app:cardElevation="10dp"
                     android:layout_margin="15dp"
+                    app:cardElevation="10dp"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_columnWeight="1">
 
@@ -280,6 +266,7 @@
                     app:cardElevation="10dp"
                     android:layout_width="0dp"
                     android:layout_margin="15dp"
+                    android:layout_height="wrap_content"
                     android:layout_columnWeight="1">
 
                     <LinearLayout
@@ -313,6 +300,7 @@
                     app:cardElevation="10dp"
                     android:layout_width="0dp"
                     android:layout_margin="15dp"
+                    android:layout_height="wrap_content"
                     android:layout_columnWeight="1">
 
                     <LinearLayout
@@ -346,6 +334,7 @@
                     app:cardElevation="10dp"
                     android:layout_width="0dp"
                     android:layout_margin="15dp"
+                    android:layout_height="wrap_content"
                     android:layout_columnWeight="1">
 
                     <LinearLayout
@@ -353,27 +342,52 @@
                         android:layout_height="160dp"
                         android:orientation="vertical"
                         android:gravity="center">
-                    <TextView
-                        android:id="@+id/lowHeader"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Low"
-                        android:textColor="@android:color/white"
-                        android:gravity="center"
-                        android:textSize="20sp" />
+                        <TextView
+                            android:id="@+id/lowHeader"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Low"
+                            android:textColor="@android:color/white"
+                            android:gravity="center"
+                            android:textSize="20sp" />
 
-                    <TextView
-                        android:id="@+id/low"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="0"
-                        android:textColor="@android:color/white"
-                        android:gravity="center"
-                        android:textSize="36sp" />
+                        <TextView
+                            android:id="@+id/low"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="0"
+                            android:textColor="@android:color/white"
+                            android:gravity="center"
+                            android:textSize="36sp" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="160dp"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/feelsLikeHeader"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="Feels Like"
+                        android:textColor="@android:color/white"
+                        android:textSize="20sp" />
+
+                    <TextView
+                        android:id="@+id/feelsLike"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="0"
+                        android:textColor="@android:color/white"
+                        android:textSize="32sp" />
+                </LinearLayout>
             </GridLayout>
+
             <!-- Favorites Header -->
             <TextView
                 android:id="@+id/favoritesHeader"
@@ -392,9 +406,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:orientation="vertical" />
-
         </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 
     <Button
         android:id="@+id/settings_button"
