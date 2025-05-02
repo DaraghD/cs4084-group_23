@@ -51,9 +51,9 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
-    private static final String API_KEY = "0ec2f3bfd7e39f7e44f11e00bbd31a81";
+    public static final String API_KEY = "0ec2f3bfd7e39f7e44f11e00bbd31a81";
     private static final int LOCATION_REQ = 1001;
-    private static final String EXTRA_UID = "uid";
+    public static final String EXTRA_UID = "uid";
 
     private String currentUid;
     private String units = "metric";
@@ -77,6 +77,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Button settings_button = findViewById(R.id.settings_button);
         SearchView search_button = findViewById(R.id.search_button);
+        Button editFavBtn = findViewById(R.id.edit_favorites_button);
+        Button mapBtn = findViewById(R.id.map_button);
         search_button.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -118,10 +120,25 @@ public class MainActivity extends AppCompatActivity {
         locClient = LocationServices.getFusedLocationProviderClient(this);
 
         swipeRefreshLayout = findViewById(R.id.swipeRefresh);
-        swipeRefreshLayout.setOnRefreshListener(()-> {
+        loadUserAndPrefs(currentUid);
+        swipeRefreshLayout.setOnRefreshListener(() -> {
             loadUserAndPrefs(currentUid);
         });
-        }
+
+
+        editFavBtn = findViewById(R.id.edit_favorites_button);
+        editFavBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, EditFavoritesActivity.class);
+            intent.putExtra(EXTRA_UID, currentUid);
+            startActivity(intent);
+        });
+
+
+        mapBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, MapActivity.class);
+            startActivity(intent);
+        });
+    }
 
     @Override
     protected void onResume() {
@@ -159,12 +176,13 @@ public class MainActivity extends AppCompatActivity {
 
     // if lon and lat are null, the users current location is used
     public void fetchWeather(String uid, Double lon, Double lat) {
-
+        // 1) Read updated preferences here
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         String temperatureUnit = preferences.getString("temperature_unit", "celsius");
 
         units = temperatureUnit.equals("celsius") ? "metric" : "imperial";
 
+        // 2) Permissions check
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED ||
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -180,6 +198,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        // 3) Get location and proceed
         locClient.getCurrentLocation(LocationRequest.PRIORITY_HIGH_ACCURACY, null)
                 .addOnSuccessListener(loc -> {
                     if (loc != null) {
@@ -208,8 +227,6 @@ public class MainActivity extends AppCompatActivity {
                             Toast.LENGTH_SHORT).show();
                     fetchFavorites(uid);
                 });
-
-        swipeRefreshLayout.setRefreshing(false);
     }
 
 
@@ -268,6 +285,9 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Fetch and display the “Current Location” card
+     */
     private void fetchByCoords(double lat,
                                double lon,
                                String label,
@@ -331,7 +351,7 @@ public class MainActivity extends AppCompatActivity {
                         String pressureUnit = preferences.getString("pressure_unit_preference", "hpa"); // hpa, mmhg, inhg
                         String tempSymbol = temperatureUnit.equals("celsius") ? "C" : "F";
 
-                        // Convert wind speed
+                        // Convert wind speed (API gives m/s)
                         double windSpeedConverted = windSpd;
                         String windSpeedUnitLabel = "m/s";
                         if (speedUnit.equals("kmh")) {
@@ -342,7 +362,7 @@ public class MainActivity extends AppCompatActivity {
                             windSpeedUnitLabel = "mph";
                         }
 
-                        // Convert pressure
+                        // Convert pressure (API gives hPa)
                         double pressureConverted = press;
                         String pressureLabel = "hPa";
                         if (pressureUnit.equals("mmhg")) {
@@ -404,18 +424,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void fetchFavorites(String uid) {
-        DatabaseReference root = FirebaseDatabase.getInstance().getReference();
-        root.child("userFavorites").child(uid)
-                .get().addOnSuccessListener(favSnap -> {
-                    for (var c : favSnap.getChildren()) {
-                        String cityId = c.getKey();
-                        fetchFavoriteById(cityId);
-                    }
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Failed to load favorites",
-                                Toast.LENGTH_SHORT).show()
-                );
+        // this runs on whichever thread called fetchFavorites, might be background!
+        runOnUiThread(() -> {
+            // 0) clear any old cards (now safely on main thread)
+            favoritesContainer.removeAllViews();
+
+            // 1) now fetch from Firebase (its listeners themselves execute on main thread)
+            DatabaseReference root = FirebaseDatabase.getInstance().getReference();
+            root.child("userFavorites").child(uid)
+                    .get()
+                    .addOnSuccessListener(favSnap -> {
+                        for (var c : favSnap.getChildren()) {
+                            String cityId = c.getKey();
+                            fetchFavoriteById(cityId);
+                        }
+                    })
+                    .addOnFailureListener(e ->
+                            Toast.makeText(this, "Failed to load favorites",
+                                    Toast.LENGTH_SHORT).show()
+                    );
+        });
     }
 
     private void fetchFavoriteById(String cityId) {

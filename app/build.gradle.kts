@@ -51,6 +51,7 @@ dependencies {
     implementation("com.google.firebase:firebase-database")
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
     implementation("com.google.android.gms:play-services-location:18.0.0")
+    implementation ("com.google.android.gms:play-services-maps:18.1.0")
     implementation(libs.swiperefreshlayout)
     implementation(libs.preference)
     testImplementation(libs.junit)
